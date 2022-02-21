@@ -1,4 +1,11 @@
 # WprimeToTauNu
+
+## A brief to git
+Before clone the respiratory please follow the instruction,
+* fork the respiratory to your github account
+* clone the respiratory from your github
+* create a new branch
+* Done !!
 ## Signal Sample Production
 The prodction details of the **W'-> tau nu** process are given below,
 
