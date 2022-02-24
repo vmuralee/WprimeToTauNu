@@ -61,3 +61,7 @@ python3 training/regression.py -is <path/to/signalfile.root> -ib <path/to/backgr
 ```
 
 if you want to test the model for background samples, remove ```-s``` boolean
+
+## CLs Estimation
+
+Histofactory module used for finding expected limit on the analysis. An example shown in the ```CLsInterval/POIEstimator.py``` file. Before running the code one has to install the **pyhf** package. 
