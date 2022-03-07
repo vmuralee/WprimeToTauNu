@@ -54,6 +54,8 @@ def plot_loss(history):
 if(args.train == True):
     print(15*'==')
     TrainDataSet = pd.read_csv(args.inputFile,index_col=False)
+    TrainDataSet.gen_mT.fillna(TrainDataSet.mean(),inplace=True)
+    TrainDataSet.gen_dtheta.fillna(TrainDataSet.mean(),inplace=True)
 else:
     TestDataSet = pd.read_csv(args.inputFile,index_col=False)
     
@@ -65,9 +67,17 @@ else:
     xstar  = TestDataSet.to_numpy(dtype='float32')
     #ystar  = TestDataSet['boson_mass'].to_numpy(dtype='float32')
 
-num_pipeline = Pipeline([
-    ('std_scaler',StandardScaler()),
-])
+
+if(args.train):
+    num_pipeline = Pipeline([
+        ('std_scaler',StandardScaler()),
+    ])
+    xtrain = num_pipeline.fit_transform(xtrain)
+else:
+    num_pipeline = Pipeline([
+        ('std_scaler',StandardScaler()),
+    ])
+    xstar = num_pipeline.fit_transform(xstar)
 
 
 
