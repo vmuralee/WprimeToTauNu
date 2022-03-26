@@ -1,49 +1,79 @@
 from POIEstimator import POIEstimator
 import ROOT
+import json
 
-sigdata_1TeV = [0.463,324.7,469.0,405.2,176.9,12.09,1.21,0.226,0.169,0.0678,0.0113]
-sigdata_2TeV = [0.007,5.036,8.394,10.02,10.62,10.52,9.395,7.704,5.211,1.934,0.289]
-sigdata_3TeV = [0.004,0.4123,0.5734,0.6702,0.72,0.7553,0.764,0.769,0.732,0.678,0.598]
-sigdata_4TeV = [0.00005,0.026,0.023,0.017,0.014,0.012,0.010,0.11,0.009,0.0087,0.008]
+# sigdata_1TeV = [0.463,324.7,469.0,405.2,176.9,12.09,1.21,0.226,0.169,0.0678,0.0113]
+# sigdata_2TeV = [0.007,5.036,8.394,10.02,10.62,10.52,9.395,7.704,5.211,1.934,0.289]
+# sigdata_3TeV = [0.004,0.4123,0.5734,0.6702,0.72,0.7553,0.764,0.769,0.732,0.678,0.598]
+# sigdata_4TeV = [0.00005,0.026,0.023,0.017,0.014,0.012,0.010,0.11,0.009,0.0087,0.008]
 
-bkgdata  = [6.628,930.51,310.02,34.17,5.75,3.55,1.789,0.715,0.279,0.039,0.0398]
-bkg_uncerts=[1.105, 12.86,7.10,2.19,0.576,0.433,0.267,0.169,0.105,0.0397,0.0397]
+# bkgdata  = [6.628,930.51,310.02,34.17,5.75,3.55,1.789,0.715,0.279,0.039,0.0398]
+# bkg_uncerts=[1.105, 12.86,7.10,2.19,0.576,0.433,0.267,0.169,0.105,0.0397,0.0397]
 
-est_M1TeV = POIEstimator(sigdata_1TeV,bkgdata,bkg_uncerts)
-est_M2TeV = POIEstimator(sigdata_2TeV,bkgdata,bkg_uncerts)
-est_M3TeV = POIEstimator(sigdata_3TeV,bkgdata,bkg_uncerts)
-est_M4TeV = POIEstimator(sigdata_4TeV,bkgdata,bkg_uncerts)
+# est_M1TeV = POIEstimator(sigdata_1TeV,bkgdata,bkg_uncerts)
+# est_M2TeV = POIEstimator(sigdata_2TeV,bkgdata,bkg_uncerts)
+# est_M3TeV = POIEstimator(sigdata_3TeV,bkgdata,bkg_uncerts)
+# est_M4TeV = POIEstimator(sigdata_4TeV,bkgdata,bkg_uncerts)
 
-poi_val1 = est_M1TeV.POIrange(0.01,1,50)
-poi_val2 = est_M2TeV.POIrange(0.01,1,50)
-poi_val3 = est_M3TeV.POIrange(0.01,1,50)
-poi_val4 = est_M4TeV.POIrange(0.00001,1,50)
+# poi_val1 = est_M1TeV.POIrange(0.01,1,50)
+# poi_val2 = est_M2TeV.POIrange(0.01,1,50)
+# poi_val3 = est_M3TeV.POIrange(0.01,1,50)
+# poi_val4 = est_M4TeV.POIrange(0.00001,1,50)
 
-exp_limits_1 = est_M1TeV.compute_limits(poi_val1,0.05)
-exp_limits_2 = est_M2TeV.compute_limits(poi_val2,0.05)
-exp_limits_3 = est_M3TeV.compute_limits(poi_val3,0.05)
-exp_limits_4 = est_M4TeV.compute_limits(poi_val4,0.05)
+# exp_limits_1 = est_M1TeV.compute_limits(poi_val1,0.05)
+# exp_limits_2 = est_M2TeV.compute_limits(poi_val2,0.05)
+# exp_limits_3 = est_M3TeV.compute_limits(poi_val3,0.05)
+# exp_limits_4 = est_M4TeV.compute_limits(poi_val4,0.05)
 
-limits = [exp_limits_1,exp_limits_2,exp_limits_3]#,exp_limits_4]
-xsec = [2.457*1000,0.107*1000,0.011*1000,0.00162*1000]
+f = open('DataCard.json')
+
+mT_limits, dM_limits = [],[]
+datacard = json.load(f)
+for sample in datacard.keys():
+    print(sample)
+    
+    sigbins_mT = datacard[sample]['signal_mT']
+    bkgbins_mT = datacard[sample]['Wjets_mT']
+    bkgunce_mT = datacard[sample]['WjetsEr_mT']
+
+    sigbins_dnnMass = datacard[sample]['signal_dnnMass']
+    bkgbins_dnnMass = datacard[sample]['Wjets_dnnMass']
+    bkgunce_dnnMass = datacard[sample]['WjetsEr_dnnMass']
+
+    est_mT = POIEstimator(sigbins_mT,bkgbins_mT,bkgunce_mT)
+    est_dM = POIEstimator(sigbins_dnnMass,bkgbins_dnnMass,bkgunce_dnnMass)
+
+    poi_val = est_dM.POIrange(0.00001,1,100)
+
+    exp_limits_dM = est_dM.compute_limits(poi_val,0.05)
+    exp_limits_mT = est_mT.compute_limits(poi_val,0.05)
+    mT_limits.append(exp_limits_mT)
+    dM_limits.append(exp_limits_dM)
+
+#limits = [exp_limits_1,exp_limits_2,exp_limits_3]#,exp_limits_4]
+xsec = [2.457*1000,0.107*1000,0.011*1000,0.00162*1000,0.00036*1000]
 
 #print(exp_limits_4)
 
-labels = [1000,2000,3000]#,4000]
+labels = [1000,2000,3000,4000,5000]
 N = len(labels) 
 yellow = ROOT.TGraph(2*N)
 green  = ROOT.TGraph(2*N)
 median = ROOT.TGraph(N)
+ref_median = ROOT.TGraph(N)
+theory = ROOT.TGraph(N)
 
 up2s = [ ]
 for i in range(N):
-    up2s.append(limits[i][4]*xsec[i])
-    print(i,'  ',limits[i][2]*xsec[i])
-    yellow.SetPoint(i,  labels[i] , limits[i][4]*xsec[i])
-    green.SetPoint( i,  labels[i] , limits[i][3]*xsec[i])
-    median.SetPoint(i,  labels[i] , limits[i][2]*xsec[i])
-    green.SetPoint(  2*N-1-i, labels[i], limits[i][1]*xsec[i]) 
-    yellow.SetPoint( 2*N-1-i, labels[i], limits[i][0]*xsec[i])
+    up2s.append(dM_limits[i][4]*xsec[i])
+    print(i,'  ',dM_limits[i][2]*xsec[i])
+    yellow.SetPoint(i,  labels[i] , dM_limits[i][4]*xsec[i])
+    green.SetPoint( i,  labels[i] , dM_limits[i][3]*xsec[i])
+    median.SetPoint(i,  labels[i] , dM_limits[i][2]*xsec[i])
+    theory.SetPoint(i,  labels[i] , xsec[i])
+    ref_median.SetPoint(i,  labels[i] , mT_limits[i][2]*xsec[i])
+    green.SetPoint(  2*N-1-i, labels[i], dM_limits[i][1]*xsec[i]) 
+    yellow.SetPoint( 2*N-1-i, labels[i], dM_limits[i][0]*xsec[i])
 
 W = 800
 H  = 600
@@ -78,8 +108,8 @@ frame.GetYaxis().CenterTitle(True)
 frame.GetYaxis().SetTitle("95% upper limit on #sigma #times B(W'#rightarrow #tau#nu) [fb] ")
 #    frame.GetYaxis().SetTitle("95% upper limit on #sigma #times BR / (#sigma #times BR)_{SM}")
 frame.GetXaxis().SetTitle("Mw' [GeV]]")
-frame.SetMinimum(1)
-frame.SetMaximum(max(up2s)*1.05)
+frame.SetMinimum(0.01)
+frame.SetMaximum(max(up2s)*10.05)
 frame.GetXaxis().SetLimits(labels[0],labels[-1]+100)
 
 yellow.SetFillColor(ROOT.kOrange)
@@ -96,6 +126,16 @@ median.SetLineColor(1)
 median.SetLineWidth(2)
 median.SetLineStyle(2)
 median.Draw('lsame')
+
+theory.SetLineColor(1)
+theory.SetLineWidth(3)
+theory.SetLineStyle(1)
+theory.Draw('lsame')
+
+ref_median.SetLineColor(2)
+ref_median.SetLineWidth(2)
+ref_median.SetLineStyle(1)
+ref_median.Draw('lsame')
 
 x1 = 0.5
 x2 = x1 + 0.24
